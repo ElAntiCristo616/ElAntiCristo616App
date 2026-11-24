@@ -156,7 +156,9 @@ data class FixedColorRoles(
     }
 }
 
-const val DEFAULT_SEED_COLOR = 0xFFCD2D32
+// 0xFFCD2D32 como Int con signo: el literal hex con alfa FF supera Int.MAX_VALUE
+// y Kotlin lo infiere Long, lo que rompe seedColor: Int en 4 sitios.
+const val DEFAULT_SEED_COLOR = -3330766
 
 /**
  * @return a [Color] generated using [Hct] algorithm, harmonized with `primary` color
