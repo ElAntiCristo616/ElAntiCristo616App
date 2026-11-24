@@ -20,21 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Subscriptions
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Subscriptions
-import androidx.compose.material.icons.outlined.Terminal
-import androidx.compose.material.icons.outlined.VolunteerActivism
-import androidx.compose.material.icons.rounded.BugReport
-import androidx.compose.material.icons.rounded.Cookie
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.SettingsApplications
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -195,16 +186,9 @@ fun NavigationDrawerSheetContent(
                 },
                 selected = currentRoute == Route.DOWNLOADS,
             )
-            NavigationDrawerItem(
-                label = { Text(stringResource(R.string.custom_command)) },
-                icon = { Icon(Icons.Outlined.Terminal, null) },
-                onClick = {
-                    scope
-                        .launch { onDismissRequest() }
-                        .invokeOnCompletion { onNavigateToRoute(Route.TASK_LIST) }
-                },
-                selected = currentRoute == Route.TASK_LIST,
-            )
+            // ElAntiCristo616 App (versión para principiantes): solo Descargas,
+            // Historial y Ajustes. Sin comandos, sin patrocinar y sin ajustes
+            // rápidos: lo avanzado no se muestra.
             NavigationDrawerItem(
                 label = { Text(stringResource(R.string.settings)) },
                 icon = { Icon(Icons.Outlined.Settings, null) },
@@ -215,90 +199,6 @@ fun NavigationDrawerSheetContent(
                 },
                 selected = currentRoute == Route.SETTINGS_PAGE,
             )
-
-            NavigationDrawerItem(
-                label = { Text(stringResource(R.string.sponsor)) },
-                icon = { Icon(Icons.Outlined.VolunteerActivism, null) },
-                onClick = {
-                    scope
-                        .launch { onDismissRequest() }
-                        .invokeOnCompletion { onNavigateToRoute(Route.DONATE) }
-                },
-                selected = currentRoute == Route.DONATE,
-            )
-
-            if (showQuickSettings) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                Column(
-                    modifier = Modifier.padding(start = 16.dp).padding(top = 16.dp, bottom = 12.dp),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        stringResource(R.string.settings),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier,
-                    )
-                }
-
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.general_settings)) },
-                    icon = { Icon(Icons.Rounded.SettingsApplications, null) },
-                    onClick = {
-                        scope
-                            .launch { onDismissRequest() }
-                            .invokeOnCompletion {
-                                onNavigateToRoute(Route.GENERAL_DOWNLOAD_PREFERENCES)
-                            }
-                    },
-                    selected = currentRoute == Route.GENERAL_DOWNLOAD_PREFERENCES,
-                )
-
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.download_directory)) },
-                    icon = { Icon(Icons.Rounded.Folder, null) },
-                    onClick = {
-                        scope
-                            .launch { onDismissRequest() }
-                            .invokeOnCompletion { onNavigateToRoute(Route.DOWNLOAD_DIRECTORY) }
-                    },
-                    selected = currentRoute == Route.DOWNLOAD_DIRECTORY,
-                )
-
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.cookies)) },
-                    icon = { Icon(Icons.Rounded.Cookie, null) },
-                    onClick = {
-                        scope
-                            .launch { onDismissRequest() }
-                            .invokeOnCompletion { onNavigateToRoute(Route.COOKIE_PROFILE) }
-                    },
-                    selected = currentRoute == Route.COOKIE_PROFILE,
-                )
-
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.trouble_shooting)) },
-                    icon = { Icon(Icons.Rounded.BugReport, null) },
-                    onClick = {
-                        scope
-                            .launch { onDismissRequest() }
-                            .invokeOnCompletion { onNavigateToRoute(Route.TROUBLESHOOTING) }
-                    },
-                    selected = currentRoute == Route.TROUBLESHOOTING,
-                )
-
-                NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.about)) },
-                    icon = { Icon(Icons.Rounded.Info, null) },
-                    onClick = {
-                        scope
-                            .launch { onDismissRequest() }
-                            .invokeOnCompletion { onNavigateToRoute(Route.ABOUT) }
-                    },
-                    selected = currentRoute == Route.ABOUT,
-                )
-            }
         }
         Spacer(Modifier.weight(1f))
         footer?.invoke()
@@ -370,19 +270,6 @@ fun NavigationRailContent(
             modifier = Modifier,
             selected = currentTopDestination == Route.DOWNLOADS,
             onClick = { onNavigateToRoute(Route.DOWNLOADS) },
-        )
-
-        NavigationRailItemVariant(
-            icon = {
-                Icon(
-                    if (currentTopDestination == Route.TASK_LIST) Icons.Filled.Terminal
-                    else Icons.Outlined.Terminal,
-                    stringResource(R.string.custom_command),
-                )
-            },
-            modifier = Modifier,
-            selected = currentTopDestination == Route.TASK_LIST,
-            onClick = { onNavigateToRoute(Route.TASK_LIST) },
         )
 
         NavigationRailItemVariant(

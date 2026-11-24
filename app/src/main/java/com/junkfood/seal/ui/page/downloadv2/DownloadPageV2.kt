@@ -8,6 +8,9 @@ import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,10 +37,15 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
@@ -46,6 +54,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -81,6 +91,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -118,6 +130,7 @@ import com.junkfood.seal.ui.svg.drawablevectors.download
 import com.junkfood.seal.ui.theme.SealTheme
 import com.junkfood.seal.util.DownloadUtil
 import com.junkfood.seal.util.FileUtil
+import com.junkfood.seal.util.findURLsFromString
 import com.junkfood.seal.util.getErrorReport
 import com.junkfood.seal.util.makeToast
 import kotlinx.coroutines.CoroutineScope
@@ -212,6 +225,10 @@ fun DownloadPageV2(
         downloadCallback = {
             view.slightHapticFeedback()
             dialogViewModel.postAction(Action.ShowSheet())
+        },
+        onUrlSubmit = { url ->
+            view.slightHapticFeedback()
+            dialogViewModel.postAction(Action.ShowSheet(urlList = listOf(url)))
         },
         onMenuOpen = onMenuOpen,
     ) { task, action ->
@@ -318,6 +335,7 @@ fun DownloadPageImplV2(
     modifier: Modifier = Modifier,
     taskDownloadStateMap: SnapshotStateMap<Task, Task.State>,
     downloadCallback: () -> Unit = {},
+    onUrlSubmit: (String) -> Unit = {},
     onMenuOpen: (() -> Unit) = {},
     onActionPost: (Task, UiAction) -> Unit,
 ) {
@@ -386,6 +404,13 @@ fun DownloadPageImplV2(
                     Spacer(Modifier.height(with(LocalDensity.current) { headerOffset.toDp() }))
                     ChristmasGarland(modifier = Modifier.fillMaxWidth())
                     Header(onMenuOpen = onMenuOpen, modifier = Modifier.padding(horizontal = 16.dp))
+                    // ElAntiCristo616 App (principiantes): el campo para pegar el enlace
+                    // siempre visible al abrir la app, sin tener que desplegar nada.
+                    UrlInputCard(
+                        modifier = Modifier.padding(top = 4.dp),
+                        onUrlSubmit = onUrlSubmit,
+                    )
+                    Spacer(Modifier.height(8.dp))
                     SelectionGroupRow(
                         modifier =
                             Modifier.horizontalScroll(rememberScrollState())
@@ -584,6 +609,85 @@ private fun HeaderExpanded(modifier: Modifier = Modifier) {
         )
     }
     Spacer(Modifier.height(4.dp))
+}
+
+// ElAntiCristo616 App (versión para principiantes): campo para pegar el enlace
+// siempre visible en la pantalla principal, con botón Pegar y botón DESCARGAR.
+// Pegar el enlace → elegir calidad y video/audio → DESCARGAR. Nada que desplegar.
+@Composable
+private fun UrlInputCard(
+    modifier: Modifier = Modifier,
+    onUrlSubmit: (String) -> Unit,
+) {
+    val clipboardManager = LocalClipboardManager.current
+    var url by rememberSaveable { mutableStateOf("") }
+
+    // Si hay un enlace en el portapapeles, se llena solo al abrir la app.
+    LaunchedEffect(Unit) {
+        if (url.isBlank()) {
+            clipboardManager.getText()?.let { text ->
+                findURLsFromString(text.toString()).firstOrNull()?.let { url = it }
+            }
+        }
+    }
+
+    Column(modifier = modifier.padding(horizontal = 20.dp)) {
+        OutlinedTextField(
+            value = url,
+            onValueChange = { url = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.video_url)) },
+            placeholder = { Text("https://www.youtube.com/...") },
+            leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
+            trailingIcon = {
+                if (url.isNotEmpty()) {
+                    IconButton(onClick = { url = "" }) {
+                        Icon(
+                            Icons.Outlined.Clear,
+                            contentDescription = stringResource(R.string.clear),
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+            keyboardOptions =
+                KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+            keyboardActions =
+                KeyboardActions(onGo = { if (url.isNotBlank()) onUrlSubmit(url.trim()) }),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedButton(
+                onClick = {
+                    clipboardManager.getText()?.let { text ->
+                        findURLsFromString(text.toString()).firstOrNull()?.let { url = it }
+                    }
+                },
+                modifier = Modifier.height(56.dp),
+            ) {
+                Icon(Icons.Outlined.ContentPaste, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.paste_msg))
+            }
+            Button(
+                onClick = { onUrlSubmit(url.trim()) },
+                enabled = url.isNotBlank(),
+                modifier = Modifier.weight(1f).height(56.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFCD2D32),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFFCD2D32).copy(alpha = 0.4f),
+                        disabledContentColor = Color.White.copy(alpha = 0.6f),
+                    ),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text("DESCARGAR", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
 }
 
 @Composable
