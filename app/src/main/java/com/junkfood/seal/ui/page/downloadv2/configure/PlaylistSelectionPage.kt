@@ -136,7 +136,6 @@ fun PlaylistSelectionPage(
             )
         }
     }
-}
 
     // ElAntiCristo616 App (principiantes): sin diálogos de ajuste de formato.
     // El formato es fijo (MP4 compatible / MP3) y no se puede cambiar.
