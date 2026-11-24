@@ -17,9 +17,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # El runner ubuntu-latest ya trae el Android SDK preinstalado ($ANDROID_HOME);
+      # setup-android@v3 falla porque intenta instalar el paquete obsoleto "tools".
       - name: Install Android SDK packages
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
