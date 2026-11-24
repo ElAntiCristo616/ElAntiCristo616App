@@ -27,6 +27,25 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Set up signing keystore
+        # Decodifica el keystore fijo (secreto SIGNING_KEYSTORE_BASE64) y crea
+        # keystore.properties para que build.gradle.kts firme el build debug
+        # con la llave fija (signing config "githubPublish"). Sin esto, el
+        # runner firmaría con una llave debug efímera distinta en cada run.
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/elanticristo616.keystore"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/elanticristo616.keystore
+          storePassword=$SIGNING_STORE_PASSWORD
+          keyAlias=$SIGNING_KEY_ALIAS
+          keyPassword=$SIGNING_KEY_PASSWORD
+          EOF
+
       - name: Build debug APK
         run: ./gradlew :app:assembleGenericDebug --no-daemon
 

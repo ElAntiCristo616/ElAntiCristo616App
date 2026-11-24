@@ -17,3 +17,6 @@
 local.properties
 /keystore.properties
 .kotlin
+# Llaves de firma: nunca se suben al repo
+*.keystore
+*.jks
